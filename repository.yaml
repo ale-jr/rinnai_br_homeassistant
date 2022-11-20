@@ -1,0 +1,4 @@
+# https://developers.home-assistant.io/docs/add-ons/repository#repository-configuration
+name: Aquecedor Rinnai (versão brasileira)
+url: 'https://github.com/ale-jr/rinnai_br_homeassistant'
+maintainer: Alexandre Fernandes Junior <eu@alejr.com.br>
