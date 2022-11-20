@@ -1,8 +1,10 @@
 {
-    "model": "",
-    "serial_number": "",
-    "host": "",
+    "device_model": "",
+    "device_serial_number": "",
+    "device_host": "",
+    "device_poll_interval": 0,
+    "mqtt_host": "",
     "mqtt_user": "",
     "mqtt_password": "",
-    "poll_interval": ""
+    "ha_ip": ""
 }

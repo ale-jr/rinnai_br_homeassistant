@@ -1,6 +1,6 @@
 name: "Aquecedores Rinnai Brasil (Módulo ROU-003)"
 description: "Integração para os aquecedores da Rinnai no Brasil com módulo wifi ROU-003"
-version: "1.0.0"
+version: "1.0.4"
 slug: "modulo_aquecedor_rinnai_brasil"
 init: false
 arch:
@@ -9,18 +9,22 @@ arch:
   - armhf
   - armv7
   - i386
-startup: before
 options:
-  model: ""
-  serial_number: ""
-  host: ""
+  device_model: ""
+  device_serial_number: ""
+  device_host: ""
+  device_poll_interval: 
+  mqtt_host: ""
   mqtt_user: ""
   mqtt_password: ""
-  poll_interval: 
+  ha_ip: ""
+
 schema:
-  model: str
-  serial_number: str
-  host: str
+  device_model: str
+  device_serial_number: str
+  device_host: str
+  device_poll_interval: int
+  mqtt_host: str
   mqtt_user: str
   mqtt_password: str
-  poll_interval: int
+  ha_ip: str
