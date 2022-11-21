@@ -2,7 +2,8 @@
 Addon para integrar no Home Assistant os aquecedores de água a gás da Rinnai Brasil que suportam o módulo ROU003.
 
 # Considerações
-Este projeto foi desenvolvido sob a licença MIT, sendo que este addon não foi certificado nem validado pela Rinnai, ao utilizar este addon você concorda com a utilização por sua própria conta e risco, não me reponsabilizo por nenhum mal funcionamento e/ou danos do aquecedor, módulo ou aplicativos (rinnai e home assistant) bem como danos físicos e materiais que possam ser causados pela utilização deste projeto. Você foi avisado!
+- Este projeto foi desenvolvido sob a licença MIT, sendo que este addon não foi certificado nem validado pela Rinnai, ao utilizar este addon você concorda com a utilização por sua própria conta e risco, não me reponsabilizo por nenhum mal funcionamento e/ou danos do aquecedor, módulo ou aplicativos (rinnai e home assistant) bem como danos físicos e materiais que possam ser causados pela utilização deste projeto. Você foi avisado!
+- O módulo foi instalado no aquecedor REUE27, acho dificil alguma coisa mudar entre os modelos, porém tem a possibilidade de aparecer algum bug ou algo do tipo, especialmente na parte de definir temperaturas
 
 # Instalação
 ## Pré requisitos
