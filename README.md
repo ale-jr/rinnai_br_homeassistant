@@ -188,12 +188,43 @@ Response:Retorna o mesmo valor do endpoint `/tela_`
 11,0,0,18,1380,0,null:pri,12,5437,Sep 16 2022,15,0,0,0
 ```
 
+## Consumo semanal
+Request: 
+```
+/consumo
+```
+Response:
+```
+97:20,382,9457,145:17,577,15477
+```
+Descrição das propriedades separadas por vírgula
+- 0: `97:20` - Minutos e segundo (semana atual) separados por dois pontos
+- 1: `382` - Quantidade de agua usada em litros (semana atual)
+- 2: `9457` - Consumo de gás em kcal (semana atual) 9400 kcal equivalem a 1m³ de gás natural 
+- 3: `145:17`- Minutos e segundo (semana anterior) separados por dois pontos
+- 4: `577` - Quantidade de agua usada em litros (semana anterior)
+- 5: `15477` - Consumo de gás kCal (semana anterior) 9400 kcal equivalem a 1m³ de gás natural 
+
+## Histórico
+Request: 
+```
+/historico
+```
+Response:
+```
+17:30,9,65,1327,1669228461;1:57,9,5,69,1669227406;13:04,13,43,1130,1669206601;21:07,13,82,2244,1669106217;20:41,8,89,1922,1668984818;21:06,12,83,2168,1668972831;1:00,20,9,394,1668873479;17:27,12,64,1706,1668801820;18:21,9,61,1282,1668762456;2:16,8,5,119,1668761297;
+```
+Histórico de uso separado entre `;` para cada uso e entre `,` para cada parâmetro de uso. Registros sâo ordenados dos mais atuais para os mais antigos
+Parametros por registro
+- 0: `17:30` - Minutos e segundos separados por `:`
+- 1: `9` - Temperatura definida usando o mesmo dicionário do endpoint `/tela_`, (9 equivale a 41 graus)
+- 2: `65` - Consumo de agua em litros
+- 3: `1327` - Consumo de gás em kcal (9400 kcal equivalem a 1m³ de gás natural) 
+- 4: `1669228461` - Timestamp do inicio do registro em segundos (GMT-3)
 
 ## Endpoints a serem documentados:
 
-- `/historico` (histórico de banhos)
-- `/erros` (históricos de falhas)
-- `/consumo` (consumo semanal)
+- `/erros` (não tive nenhum erro no uso ainda para conseguir esse log 😅) 
 
 
 
