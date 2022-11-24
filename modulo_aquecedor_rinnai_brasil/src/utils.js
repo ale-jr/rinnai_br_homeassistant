@@ -25,7 +25,11 @@ const parseRinnaiTemperature = (rinnaiTemp) => {
     return RINNAI_STATE_TEMPERATURES[index]
 }
 
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+
 module.exports = {
     parseTargetTemperatureToRange,
-    parseRinnaiTemperature
+    parseRinnaiTemperature,
+    delay
 }

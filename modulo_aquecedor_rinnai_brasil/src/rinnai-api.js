@@ -1,6 +1,6 @@
 const axios = require('axios')
 const options = require('./options.js')
-const { parseTargetTemperatureToRange, parseRinnaiTemperature } = require('./utils.js')
+const { parseTargetTemperatureToRange, parseRinnaiTemperature, delay } = require('./utils.js')
 const rinnaiApi = axios.create({
     baseURL: `http://${options.device.host}`
 })
@@ -13,9 +13,6 @@ const setPriority = (requirePriority) => {
         .then(() => true)
         .catch(() => false)
 }
-
-
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 let preventUpdate = false
 const getPreventUpdate = () => preventUpdate
@@ -79,6 +76,13 @@ const setTargetTemperature = async (target, lastTargetTemp = undefined, retries 
     }
 }
 
+const setPowerState = async (turnOn) => {
+    const { isPoweredOn } = await getState()
+    if (isPoweredOn === turnOn) return true
+    const response = await rinnaiApi('/lig')
+    return parseStateParams(response.data)
+}
+
 
 
 const parseStateParams = (stringifiedParams) => {
@@ -86,9 +90,12 @@ const parseStateParams = (stringifiedParams) => {
     const targetTemperature = parseRinnaiTemperature(params[7])
     const isHeating = params[2] === '1'
     const priorityIp = params[6].split(":")[0]
+    const isPoweredOn = params[0] !== "11"
+
     return {
         targetTemperature,
         isHeating,
+        isPoweredOn,
         priorityIp
     }
 }
@@ -105,26 +112,45 @@ const getDeviceParams = () => {
     return rinnaiApi('/bus')
         .then((response) => {
             const params = response.data.split(",")
-            let targetTemperature = Math.ceil(+params[15] / 100)
-            if (targetTemperature > 55) targetTemperature = 60
+            const targetTemperature = parseRinnaiTemperature(params[18])
             const inletTemperature = +params[10] / 100
             const outletTemperature = +params[11] / 100
             const currentPowerInKCal = +params[9] / 100
-            const isHeating = currentPowerInKCal > 0
+            const powerInkW = +(currentPowerInKCal * 14.330753797649756).toFixed(1)
+            const isPoweredOn = params[0] !== "11"
 
+            const waterFlow = +params[12] / 10
+            const workingTime = +params[4]
             return {
-                isHeating,
                 targetTemperature,
                 inletTemperature,
-                outletTemperature
+                outletTemperature,
+                powerInkW,
+                isPoweredOn,
+                waterFlow,
+                workingTime
             }
         })
 }
+
+const getConsumption = () =>
+    rinnaiApi('/consumo')
+        .then(response => {
+            const params = response.data.split(',')
+            const [minutes, seconds] = params[0].split(':')
+            const workingTime = (+minutes * 60) + +seconds
+            const water = +params[1] / 1000
+            const gas = +params[2] / 9400
+            return { water, gas, workingTime }
+        })
+
 
 module.exports = {
     setTargetTemperature,
     getDeviceParams,
     getPreventUpdate,
     getState,
-    setPriority
+    setPriority,
+    setPowerState,
+    getConsumption
 }

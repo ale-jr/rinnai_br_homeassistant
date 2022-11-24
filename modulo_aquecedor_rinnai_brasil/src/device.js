@@ -1,157 +1,28 @@
-const options = require('./options.js')
-const mqttClient = require("./mqtt.js")
 const rinnaiApi = require('./rinnai-api.js')
-
-const deviceIdPrefix = `rinnai_br_${options.device.serialNumber}_`
-const haDevice = {
-    identifiers: [
-        options.device.serialNumber
-    ],
-    manufacturer: 'Rinnai Brasil',
-    model: options.device.model,
-    name: `Rinnai ${options.device.model} (${options.device.serialNumber})`,
-
-}
-
-const getEntityTopic = (component, objectId, action) => `homeassistant/${component}/${deviceIdPrefix}${objectId}/${action}`
-
-const discoverEntity = ({ component, objectId, config }) => {
-    const stringifiedConfig = JSON.stringify({
-        ...config,
-        availability: {
-            payload_available: 'online',
-            payload_not_available: 'offline',
-            topic: getEntityTopic(component, objectId, 'availabilty')
-        },
-        device: haDevice
-    })
-
-    return mqttClient.publish(getEntityTopic(component, objectId, 'config'), stringifiedConfig)
-}
-
-const SET_WATER_TARGET_TEMPERARUTURE_SET_TOPIC = getEntityTopic('number', 'target_water_temperature', 'set')
-const discoverSetWaterTargetTemperature = () => {
-    const component = 'number'
-    const objectId = 'target_water_temperature'
-    const config = {
-        command_topic: SET_WATER_TARGET_TEMPERARUTURE_SET_TOPIC,
-        device_class: 'temperature',
-        icon: 'mdi:thermometer-water',
-        min: 35,
-        max: 60,
-        mode: 'box',
-        name: 'Temperatura definida',
-        object_id: `${deviceIdPrefix}${objectId}`,
-        optimistic: true,
-        state_topic: getEntityTopic(component, objectId, 'state'),
-        step: 1,
-        unique_id: `${deviceIdPrefix}${objectId}`,
-        unit_of_measurement: '°C'
-    }
-    discoverEntity({
-        component,
-        objectId,
-        config
-    })
-}
-
-const discoverInletWaterTemperature = () => {
-    const component = 'sensor'
-    const objectId = 'inlet_water_temperature'
-    const config = {
-        device_class: 'temperature',
-        icon: 'mdi:water-thermometer-outline',
-        name: 'Temperatura de entrada',
-        object_id: `${deviceIdPrefix}${objectId}`,
-        state_topic: getEntityTopic(component, objectId, 'state'),
-        unique_id: `${deviceIdPrefix}${objectId}`,
-        unit_of_measurement: '°C'
-    }
-    discoverEntity({
-        component,
-        objectId,
-        config
-    })
-}
-const discoverOutletWaterTemperature = () => {
-    const component = 'sensor'
-    const objectId = 'outlet_water_temperature'
-    const config = {
-        device_class: 'temperature',
-        icon: 'mdi:water-thermometer',
-        name: 'Temperatura de saída',
-        object_id: `${deviceIdPrefix}${objectId}`,
-        state_topic: getEntityTopic(component, objectId, 'state'),
-        unique_id: `${deviceIdPrefix}${objectId}`,
-        unit_of_measurement: '°C'
-    }
-    discoverEntity({
-        component,
-        objectId,
-        config
-    })
-}
-
-const discoverHeatingState = () => {
-    const component = 'binary_sensor'
-    const objectId = 'heating_state'
-    const config = {
-        device_class: 'power',
-        icon: 'mdi:fire',
-        name: 'Em funcionamento',
-        object_id: `${deviceIdPrefix}${objectId}`,
-        state_topic: getEntityTopic(component, objectId, 'state'),
-        unique_id: `${deviceIdPrefix}${objectId}`
-    }
-    discoverEntity({
-        component,
-        objectId,
-        config
-    })
-}
-
-const discoverDevice = () => {
-    discoverSetWaterTargetTemperature()
-    discoverInletWaterTemperature()
-    discoverOutletWaterTemperature()
-    discoverHeatingState()
-}
+const entities = require('./entities.js')
 
 
 const setTargetWaterTemperature = (temperature) => {
     rinnaiApi.setTargetTemperature(temperature)
 }
 
-const publishEntity = ({
-    component,
-    objectId,
-    state
-}) => {
-    mqttClient.publish(getEntityTopic(component, objectId, 'state'), String(state))
-    updateEntityAvailability({ component, objectId, isAvailable: true })
+const setPowerState = (turnOn) => {
+    rinnaiApi.setPowerState(turnOn === "ON")
+        .then((state) => updateDeviceState())
 }
 
-const updateEntityAvailability = ({ component, objectId, isAvailable }) => {
-    mqttClient.publish(getEntityTopic(component, objectId, 'availabilty'), isAvailable ? 'online' : 'offline')
-}
 
 const updateDeviceState = (retries = 0) => {
     if (rinnaiApi.getPreventUpdate()) {
         console.log("[DEVICE]: Preventing state update")
         return;
     }
-    rinnaiApi.getState()
-        .then(({ targetTemperature, isHeating }) => {
-            publishEntity({
-                component: 'number',
-                objectId: 'target_water_temperature',
-                state: targetTemperature
-            })
-            publishEntity({
-                component: 'binary_sensor',
-                objectId: 'heating_state',
-                state: isHeating ? 'ON' : 'OFF'
-            })
+    return rinnaiApi.getState()
+        .then(({ targetTemperature, isHeating, isPoweredOn }) => {
+
+            entities.waterTargetTemperature.publish(targetTemperature)
+            entities.heatingState.publish(isHeating ? 'ON' : 'OFF')
+            entities.switchHeating.publish(isPoweredOn ? 'ON' : 'OFF')
         })
         .catch(error => {
             if (retries < 5)
@@ -159,17 +30,8 @@ const updateDeviceState = (retries = 0) => {
                     updateDeviceState(retries + 1)
                 }, 500 * (retries + 1))
             console.error("[DEVICE] update state error:", error?.message || error)
-            updateEntityAvailability({
-                component: 'number',
-                objectId: 'target_water_temperature',
-                isAvailable: false
-            })
-            updateEntityAvailability({
-                component: 'binary_sensor',
-                objectId: 'heating_state',
-                isAvailable: false
-            })
-
+            entities.waterTargetTemperature.updateAvailability(false)
+            entities.heatingState.updateAvailability(false)
         })
 }
 
@@ -178,21 +40,18 @@ const updateParameters = (retries = 0) => {
         console.log("[DEVICE]: Preventing state update")
         return;
     }
-    rinnaiApi.getDeviceParams()
-        .then(params => {
+    return rinnaiApi.getDeviceParams()
+        .then(({
+            inletTemperature,
+            outletTemperature,
+            powerInkW,
+            waterFlow,
+            workingTime }) => {
 
-            publishEntity({
-                component: 'sensor',
-                objectId: 'inlet_water_temperature',
-                state: params.inletTemperature
-            })
-
-            publishEntity({
-                component: 'sensor',
-                objectId: 'outlet_water_temperature',
-                state: params.outletTemperature
-            })
-
+            entities.inletWaterTemperature.publish(inletTemperature)
+            entities.outletWaterTemperature.publish(outletTemperature)
+            entities.power.publish(powerInkW)
+            entities.waterFlow.publish(waterFlow)
 
         })
         .catch(error => {
@@ -202,26 +61,62 @@ const updateParameters = (retries = 0) => {
                 }, 500 * (retries + 1))
 
             console.error("[DEVICE] update params error:", error?.message || error)
-            updateEntityAvailability({
-                component: 'sensor',
-                objectId: 'inlet_water_temperature',
-                isAvailable: false
-            })
-            updateEntityAvailability({
-                component: 'sensor',
-                objectId: 'outlet_water_temperature',
-                isAvailable: false
-            })
 
-
+            entities.inletWaterTemperature.updateAvailability(false)
+            entities.outletWaterTemperature.updateAvailability(false)
+            entities.power.updateAvailability(false)
+            entities.waterFlow.updateAvailability(false)
         })
 }
 
 
+
+let lastWaterMeasurement = -1
+let lastGasMeasurement = -1
+let lastWorkingTime = -1
+const updateConsumption = (retries = 0) => {
+    return rinnaiApi.getConsumption()
+        .then(({ water, gas, workingTime }) => {
+            if (lastWaterMeasurement > water) {
+                entities.waterConsumption.publish(0)
+            }
+            lastWaterMeasurement = water
+
+            if (lastGasMeasurement > gas) {
+                entities.gasConsumption.publish(0)
+            }
+            lastGasMeasurement = gas
+
+            if (lastWorkingTime > workingTime) {
+                entities.workingTime.publish(0)
+            }
+            lastWorkingTime = workingTime
+
+
+
+            entities.waterConsumption.publish(water)
+            entities.gasConsumption.publish(gas)
+            entities.workingTime.publish(workingTime)
+
+        })
+        .catch((error) => {
+            if (retries < 5)
+                return setTimeout(() => {
+                    updateConsumption(retries + 1)
+                }, 500 * (retries + 1))
+            console.error("[DEVICE] update consumption error:", error?.message || error)
+            entities.waterConsumption.updateAvailability(false)
+            entities.gasConsumption.updateAvailability(false)
+            entities.workingTime.updateAvailability(false)
+
+        })
+
+}
+
 module.exports = {
-    discoverDevice,
     setTargetWaterTemperature,
-    SET_WATER_TARGET_TEMPERARUTURE_SET_TOPIC,
+    setPowerState,
     updateParameters,
-    updateDeviceState
+    updateDeviceState,
+    updateConsumption
 }

@@ -129,7 +129,7 @@ Descrição das propriedades separadas por vírgula
 - 9 : `10590` - Potência máxima (kcal/min) * 10, no caso 105.9 kcal/min 
 - 10: `1260` - Temperatura de entrada da água * 100 no caso 12.6 graus
 - 11: `2309` - Temperatura de saída da água * 100, no caso 23.09 graus
-- 12: `0` - Desconhecido
+- 12: `680` - Fluxo de água (l/min) * 10, no caso 6,8 l/min
 - 13: `240` - Vazão mínima para acionamento (l/min) * 10, no caso 2.4 l/min 
 - 14: `170` - Vazão mínima para desligamento (l/min) * 10, no caso 17.0 l/min
 - 15: `4000`: Temperatura definida * 100, no caso 40 graus
