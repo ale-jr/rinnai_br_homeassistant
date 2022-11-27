@@ -11,6 +11,20 @@ const setPowerState = (turnOn) => {
         .then((state) => updateDeviceState())
 }
 
+const increaseTemperature = () => {
+    rinnaiApi.pressButton('inc')
+        .then(state => {
+            entities.waterTargetTemperature.publish(state.targetTemperature)
+        })
+}
+
+const decreaseTemperature = () => {
+    rinnaiApi.pressButton('dec')
+        .then(state => {
+            entities.waterTargetTemperature.publish(state.targetTemperature)
+        })
+}
+
 
 const updateDeviceState = (retries = 0) => {
     if (rinnaiApi.getPreventUpdate()) {
@@ -116,6 +130,8 @@ const updateConsumption = (retries = 0) => {
 module.exports = {
     setTargetWaterTemperature,
     setPowerState,
+    increaseTemperature,
+    decreaseTemperature,
     updateParameters,
     updateDeviceState,
     updateConsumption

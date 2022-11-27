@@ -28,8 +28,13 @@ const parseRinnaiTemperature = (rinnaiTemp) => {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
 
 
+const round = (number, places = 2) => +number.toFixed(places)
+
+
+
 module.exports = {
     parseTargetTemperatureToRange,
     parseRinnaiTemperature,
+    round,
     delay
 }

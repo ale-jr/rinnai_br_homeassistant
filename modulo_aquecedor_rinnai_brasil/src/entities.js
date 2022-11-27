@@ -28,15 +28,17 @@ const createEntity = (component, objectId, config) => {
         device: haDevice
     }
 
-    if (['number', 'switch'].includes(component)) {
+    if (['number', 'switch', 'button'].includes(component)) {
         extendedConfig.command_topic = getEntityTopic(component, objectId, 'set')
     }
 
     mqttClient.publish(getEntityTopic(component, objectId, 'config'), JSON.stringify(extendedConfig))
 
+
     const updateAvailability = (isAvailable) => {
         mqttClient.publish(getEntityTopic(component, objectId, 'availability'), isAvailable ? 'online' : 'offline')
     }
+    updateAvailability(true)
 
     const publish = (state) => {
         mqttClient.publish(getEntityTopic(component, objectId, 'state'), String(state))
@@ -58,7 +60,7 @@ const waterTargetTemperature = createEntity('number', 'target_water_temperature'
     min: 35,
     max: 60,
     mode: 'box',
-    name: 'Temperatura definida',
+    name: 'Temperatura definiktda',
     optimistic: true,
     step: 1,
     unit_of_measurement: '°C'
@@ -128,6 +130,17 @@ const workingTime = createEntity('sensor', 'working_time', {
     state_class: 'total_increasing'
 })
 
+
+const increaseTemperatureButton = createEntity('button', 'increase_temperature', {
+    icon: 'mdi:thermometer-chevron-up',
+    name: 'Aumentar temperatura'
+})
+
+const decreaseTemperatureButton = createEntity('button', 'decrease_temperature', {
+    icon: 'mdi:thermometer-chevron-down',
+    name: 'Diminuir temperatura'
+})
+
 module.exports = {
     waterTargetTemperature,
     inletWaterTemperature,
@@ -138,5 +151,7 @@ module.exports = {
     power,
     gasConsumption,
     waterConsumption,
-    workingTime
+    workingTime,
+    increaseTemperatureButton,
+    decreaseTemperatureButton
 }

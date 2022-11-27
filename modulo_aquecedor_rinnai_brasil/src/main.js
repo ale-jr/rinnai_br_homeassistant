@@ -34,6 +34,16 @@ mqttClient.on("connect", () => {
         if (error) console.log('[MQTT] switch heater subscription error', error)
         else console.log('[MQTT] subscribed to switch heater topic')
     })
+
+    mqttClient.subscribe(entities.increaseTemperatureButton.commandTopic, (error) => {
+        if (error) console.log('[MQTT] increase temperature subscription error', error)
+        else console.log('[MQTT] subscribed to increase temperature topic')
+    })
+
+    mqttClient.subscribe(entities.decreaseTemperatureButton.commandTopic, (error) => {
+        if (error) console.log('[MQTT] decrease temperature subscription error', error)
+        else console.log('[MQTT] subscribed to decrease temperature topic')
+    })
 })
 
 mqttClient.on('message', (topic, message) => {
@@ -43,6 +53,12 @@ mqttClient.on('message', (topic, message) => {
             break;
         case entities.switchHeating.commandTopic:
             device.setPowerState(message.toString())
+            break;
+        case entities.increaseTemperatureButton.commandTopic:
+            device.increaseTemperature()
+            break;
+        case entities.decreaseTemperatureButton.commandTopic:
+            device.decreaseTemperature()
             break;
     }
 })
