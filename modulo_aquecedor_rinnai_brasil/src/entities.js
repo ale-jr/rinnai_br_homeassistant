@@ -92,7 +92,6 @@ const switchHeating = createEntity('switch', 'heating_switch', {
 })
 
 const waterFlow = createEntity('sensor', 'water_flow', {
-    device_class: 'water',
     icon: 'mdi:water',
     name: 'Fluxo de água',
     unit_of_measurement: 'L/min'
