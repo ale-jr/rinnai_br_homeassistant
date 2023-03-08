@@ -60,7 +60,7 @@ const waterTargetTemperature = createEntity('number', 'target_water_temperature'
     min: 35,
     max: 60,
     mode: 'box',
-    name: 'Temperatura definida',
+    name: 'Temperatura definiktda',
     optimistic: true,
     step: 1,
     unit_of_measurement: '°C'
