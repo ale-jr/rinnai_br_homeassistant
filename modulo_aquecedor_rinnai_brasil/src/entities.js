@@ -141,6 +141,14 @@ const decreaseTemperatureButton = createEntity('button', 'decrease_temperature',
     name: 'Diminuir temperatura'
 })
 
+
+const wifiSignal = createEntity('sensor', 'wifi_signal_strength', {
+    icon: 'mdi:wifi',
+    name: 'Potência do sinal wifi',
+    device_class: 'signal_strength',
+    unit_of_measurement: 'dBm'
+})
+
 module.exports = {
     waterTargetTemperature,
     inletWaterTemperature,
@@ -153,5 +161,6 @@ module.exports = {
     waterConsumption,
     workingTime,
     increaseTemperatureButton,
-    decreaseTemperatureButton
+    decreaseTemperatureButton,
+    wifiSignal
 }
