@@ -1,3 +1,5 @@
+# Este repositótio está arquivado
+Não tenho mais um aquecedor compatível logo não tenho mais uma forma de resolver bugs e criar novas features, existe uma integração desenvolvida pelo [@mukaschultze](https://github.com/mukaschultze/)  com muito mais features que pode ser acessada neste repo [aqui](https://github.com/mukaschultze/ha-aquecedor-rinnai)
 # Integração Módulo Wifi Rinnai com Home Assistant (Não oficial)
 Addon para integrar no Home Assistant os aquecedores de água a gás da Rinnai Brasil que suportam o módulo ROU003.
 
