@@ -115,7 +115,7 @@ const gasConsumption = createEntity('sensor', 'gas_consumption', {
 })
 
 const waterConsumption = createEntity('sensor', 'water_consumption', {
-    device_class: 'volume',
+    device_class: 'water',
     icon: 'mdi:water-plus-outline',
     name: 'Consumo total de água',
     unit_of_measurement: 'm³',
